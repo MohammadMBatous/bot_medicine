@@ -9,9 +9,13 @@ export const bot = new Telegraf(token);
 // export let page = 0;
 let city = '';
 (async () => {
-  await Storage.init();
-  // await Storage.setItem('city','');
-  // await Storage.setItem('page',0); 
+  try {
+    await Storage.init();
+  } catch (error) {
+    console.error("🔴 خطأ في التخزين، سيتم حذفه وإعادة إنشائه...");
+    await Storage.clear();
+    await Storage.init();
+  }
 })();
 
 const keyboard_inline = Markup.inlineKeyboard([
