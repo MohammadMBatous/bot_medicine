@@ -1,10 +1,19 @@
 import { Telegraf, Markup } from "telegraf";
 import { token } from "../config/config.js";
 import contactitems from "./data/data_contact.js";
+import Storage from "node-persist";
 export const bot = new Telegraf(token);
-export let city = "";
-export let page = 0;
-export let selectservices = "";
+
+// varaible for storage
+// export let city = "" ?? "محافظة ادلب";
+// export let page = 0;
+let city = '';
+(async () => {
+  await Storage.init();
+  // await Storage.setItem('city','');
+  // await Storage.setItem('page',0); 
+})();
+
 const keyboard_inline = Markup.inlineKeyboard([
   [Markup.button.callback("عرض وسائل التواصل الرسمية", "view")],
 ]);
@@ -43,9 +52,9 @@ bot.hears(
     "محافظة طرطوس",
     "محافظة حلب",
   ],
-  (ctx) => {
-    city = ctx.message.text;
-    page = 1;
+ async (ctx) =>  {
+    await Storage.setItem('city', ctx.message.text);
+    await Storage.setItem('page', 1);
     ctx.reply("اختر الجهة التي تريد التواصل معها ؟", {
       reply_markup: {
         keyboard: [
@@ -59,8 +68,9 @@ bot.hears(
   }
 );
 
-bot.hears("المدير", (ctx) => {
-  page = 2;
+bot.hears("المدير", async (ctx) => {
+   city = await Storage.getItem('city');
+  await Storage.setItem('page', 2);
   ctx.reply(`*المدير - ${city}*`);
   ctx.reply(
     `${ctx.message.text}\nمن فضلك اختر طريقة التواصل عبر الازرار في الأسفل`,
@@ -73,8 +83,9 @@ bot.hears("المدير", (ctx) => {
   );
 });
 
-bot.hears("الدعم والتنسيق", (ctx) => {
-  page = 2;
+bot.hears("الدعم والتنسيق",async (ctx) => {
+  city = await Storage.getItem('city');
+  await Storage.setItem('page', 2);
   ctx.reply(`*الدعم والتنسيق - ${city}*`);
   ctx.reply(
     `${ctx.message.text}\nمن فضلك اختر طريقة التواصل عبر الازرار في الأسفل`,
@@ -90,8 +101,10 @@ bot.hears("الدعم والتنسيق", (ctx) => {
     }
   );
 });
-bot.hears("الشؤون المالية والإدارية", (ctx) => {
-  page = 2;
+bot.hears("الشؤون المالية والإدارية", async (ctx) => {
+  await Storage.setItem('page', 2);
+  city = await Storage.getItem('city');
+
   ctx.reply(`*الشؤون المالية والإدارية - ${city}*`);
   ctx.reply("من فضلك اختر الجهة التي تريد التواصل معها عبر الازرار في الأسفل", {
     reply_markup: {
@@ -110,8 +123,10 @@ bot.hears("🌐 الموقع الإلكتروني 🌐", (ctx) => {
 });
 
 // init
-bot.hears(["الموارد البشرية", "اللوجستي", "الإداري", "المالي"], (ctx) => {
-  page = 2;
+bot.hears(["الموارد البشرية", "اللوجستي", "الإداري", "المالي"],async (ctx) => {
+  await Storage.setItem('page', 2);
+  city = await Storage.getItem('city');
+
   ctx.reply(
     `${ctx.message.text}\nمن فضلك اختر طريقة التواصل عبر الازرار في الأسفل -`,
     Markup.inlineKeyboard([
@@ -145,8 +160,11 @@ bot.hears(["الموارد البشرية", "اللوجستي", "الإداري"
   );
 });
 
-bot.hears(["الإسعاف", "المتابع الطبي", "مسؤول المكتب"], (ctx) => {
-  page = 2;
+bot.hears(["الإسعاف", "المتابع الطبي", "مسؤول المكتب"], async (ctx) => {
+  await Storage.setItem('page', 2);
+  city = await Storage.getItem('city');
+
+    // console.log(contactitems[city]["الدعم والتنسيق"]);
   ctx.reply(
     `${ctx.message.text}\nمن فضلك اختر طريقة التواصل عبر الأزرار في الأسفل`,
     Markup.inlineKeyboard([
@@ -174,8 +192,9 @@ bot.hears(["الإسعاف", "المتابع الطبي", "مسؤول المكت
   );
 });
 
-bot.hears(["مدير المكتب"], (ctx) => {
-  page = 2;
+bot.hears(["مدير المكتب"],async (ctx) => {
+  city = await Storage.getItem('city');
+  await Storage.setItem('page', 2);
   ctx.reply(
     `${ctx.message.text}\nمن فضلك اختر طريقة التواصل عبر الأزرار في الأسفل`,
     Markup.inlineKeyboard([
@@ -204,10 +223,11 @@ bot.hears(["مدير المكتب"], (ctx) => {
 });
 
 // back
-bot.hears("عودة", (ctx) => {
-  switch (page) {
+bot.hears("عودة",async (ctx) => {
+  const countpage = await Storage.getItem('page');
+  switch (countpage) {
     case 1:
-      page = 0;
+      await Storage.setItem('page', 0);
       ctx.reply("اختر المنطقة التي تريد عرض معلومات التواصل الخاصة بها", {
         reply_markup: {
           keyboard: keyboard_main,
@@ -216,7 +236,7 @@ bot.hears("عودة", (ctx) => {
       });
       break;
     case 2:
-      page = 1;
+      await Storage.setItem('page', 1);
       ctx.reply("اختر الجهة التي تريد التواصل معها ؟", {
         reply_markup: {
           keyboard: [
