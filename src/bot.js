@@ -8,6 +8,7 @@ export const bot = new Telegraf(token);
 // export let city = "" ?? "محافظة ادلب";
 // export let page = 0;
 let city = '';
+
 (async () => {
   try {
     await Storage.init();
@@ -59,9 +60,10 @@ bot.hears(
  async (ctx) =>  {
     await Storage.setItem('city', ctx.message.text);
     await Storage.setItem('page', 1);
+    console.log(ctx.message.from.username);
     ctx.reply("اختر الجهة التي تريد التواصل معها ؟", {
       reply_markup: {
-        keyboard: [
+        keyboard: [ 
           [{ text: "المدير" }, { text: "الدعم والتنسيق" }],
           [{ text: "الشؤون المالية والإدارية" }],
           [{ text: "عودة" }],
